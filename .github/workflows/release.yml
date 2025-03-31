@@ -34,6 +34,7 @@ jobs:
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: qe_mac_apid
+          build_tool: cargo
           archive: "qe_mac_apid-${{ matrix.target }}"
           target: ${{ matrix.target }}
           token: ${{ secrets.GITHUB_TOKEN }}
