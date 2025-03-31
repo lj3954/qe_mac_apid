@@ -41,16 +41,22 @@ pub struct Serial {
 
 impl Serial {
     pub fn new(model_name: &str) -> Result<Self> {
+        // SAFETY: We're passing a valid null-terminated CString to a C function guarantees a
+        // return of a valid SERIALINFO struct
         let mut board_index = unsafe {
             crate::modelinfo::find_model_info(CString::new(model_name).unwrap().as_ptr())
         };
 
+        // SAFETY: We're passing a pointer to a stack-allocated struct which will not be
+        // deallocated into a C function which guarantees the return of a valid SerialResult
         let serial_data = unsafe { crate::modelinfo::find_serial_mlb(&raw mut board_index) };
 
-        let serial_number = c_str_to_string(serial_data.serial.as_ptr())
+        // SAFETY: serial refers to a stack-allocated null-terminated c_char array
+        let serial_number = unsafe { c_str_to_string(serial_data.serial.as_ptr()) }
             .context("Serial number could not be generated")?;
 
-        let board_serial = c_str_to_string(serial_data.mlb.as_ptr())
+        // SAFETY: mlb refers to a stack-allocated null-terminated c_char array
+        let board_serial = unsafe { c_str_to_string(serial_data.mlb.as_ptr()) }
             .context("Board serial could not be generated")?;
 
         Ok(Serial {
@@ -60,12 +66,10 @@ impl Serial {
     }
 }
 
-fn c_str_to_string(c_str: *const c_char) -> Option<String> {
-    unsafe {
-        if c_str.is_null() {
-            None
-        } else {
-            Some(CStr::from_ptr(c_str).to_string_lossy().into_owned())
-        }
+unsafe fn c_str_to_string(c_str: *const c_char) -> Option<String> {
+    if c_str.is_null() {
+        None
+    } else {
+        Some(CStr::from_ptr(c_str).to_string_lossy().into_owned())
     }
 }
