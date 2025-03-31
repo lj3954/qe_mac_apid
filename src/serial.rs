@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use std::{
-    ffi::{CStr, CString},
+    ffi::{c_char, CStr, CString},
     io::{stdin, stdout, Write},
 };
 
@@ -60,7 +60,7 @@ impl Serial {
     }
 }
 
-fn c_str_to_string(c_str: *const i8) -> Option<String> {
+fn c_str_to_string(c_str: *const c_char) -> Option<String> {
     unsafe {
         if c_str.is_null() {
             None
