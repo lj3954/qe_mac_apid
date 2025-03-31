@@ -31,6 +31,11 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        if: ${{ matrix.target == 'aarch64-unknown-linux-musl' || matrix.target == 'x86_64-unknown-linux-musl' }}
+        run: sudo apt-get update &&  sudo apt-get install -y musl-tools
+
       - uses: taiki-e/upload-rust-binary-action@v1
         with:
           bin: qe_mac_apid
